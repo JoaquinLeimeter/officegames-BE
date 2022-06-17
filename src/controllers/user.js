@@ -1,36 +1,22 @@
 const userSchema = require('../models/User')
 
-const getUser = (req, res) => {
-  userSchema
-    .find({ id: req.query })
-    .then((users) => {
-      res.status(200).json({
-        message: 'User',
-        data: users,
-      })
-    })
-    .catch((error) => {
-      res.status(400).json({
-        message: error,
-      })
-    })
+const getUser = async (req, res) => {
+  if(!req.params.id) return res.status(400).json({message: 'ID required'})
+  try {
+    let user = await userSchema.find({ _id: req.params.id })
+    return res.status(200).json({ message: 'User', data: user })
+  } catch (error) {
+    return res.status(400).json({ message: error })
+  }
 }
 
-const getUserList = (req, res) => {
-  userSchema
-    .find()
-    .then((users) => {
-      res.status(200).json({
-        message: 'List of Users',
-        data: users,
-      })
-    })
-    .catch((error) => {
-      res.status(400).json({
-        ea: "no andaaaa",
-        message: error,
-      })
-    })
+const getUserList = async (req, res) => {
+  try {
+    const users = await userSchema.find()
+    return res.status(200).json({ message: 'Users', data: users })
+  } catch (error) {
+    return res.status(400).json({ message: error })
+  }
 }
 
 const addUser = async (req, res) => {
@@ -40,34 +26,24 @@ const addUser = async (req, res) => {
       email: req.body.email,
       password: req.body.password,
     })
-
     const userSaved = await user.save()
-
-    return res.status(201).json({
-      message: 'User created',
-      data: userSaved,
-    })
+    return res.status(201).json({ message: 'User created', data: userSaved })
   } catch (error) {
-    return res.status(400).json({
-      message: error.toString(),
-    })
+    return res.status(400).json({ message: error.toString() })
   }
 }
 
-const deleteUser = (req, res) => {
-  userSchema.findByIdAndUpdate(req.params.id, (error, user) => {
-    if (error) {
-      return res.status(400).json({
-        message: error,
-      })
-    }
-    if (!user) {
-      return res.status(404).json({
-        message: 'Postulant Id does not exist',
-      })
-    }
-    return res.status(204).send()
-  })
+const deleteUser = async (req, res) => {
+  if (!req.params.id) return res.status(400).json({ message: 'ID required' })
+
+  const user = await userSchema.findOne({ _id: req.params.id }).exec()
+  if (!user) return res.status(400).json({ message: 'User not found' })
+  try {
+    const result = await userSchema.deleteOne({ _id: user.id })
+    res.status(200).json({ message: `user ${user.name} deleted successfully` })
+  } catch (error) {
+    res.status(400).json({ message: error })
+  }
 }
 
 // const updatePostulants = (req, res) => {
@@ -117,8 +93,4 @@ module.exports = {
   getUserList,
   addUser,
   deleteUser,
-  // createPostulant,
-  // deletePostulant,
-  // updatePostulants,
-  // setProfilePostulants,
 }
