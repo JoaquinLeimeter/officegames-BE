@@ -1,0 +1,10 @@
+{
+  "rules": {
+    "quotes": ["error", "double"]
+  },
+  "extends": "eslint:recommended",
+  "parserOptions": {
+    "ecmaVersion": "latest"
+  },
+  "node": true
+}
